@@ -63,7 +63,7 @@ export default function Signin() {
                         </Form.Group>
                         <Form.Group id="password" className='text-center mb-4'>
                             <Form.Label>Password</Form.Label>
-                            <Form.Control className="text-center" type="text" ref={passwordRef} required />
+                            <Form.Control className="text-center" type="password" ref={passwordRef} required />
                         </Form.Group>
                         <Button disabled={loading} className='w-100' type='submit'>Log in</Button>
                     </Form>
