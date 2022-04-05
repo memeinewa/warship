@@ -1,29 +1,50 @@
-import { useRef, useState } from 'react'
-import { Button, Card, Form, Alert } from 'react-bootstrap';
-import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useRef, useState } from 'react'
+import { Button, Card, Form, Alert } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom'
+
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Signin() {
     const nameRef = useRef()
     const passwordRef = useRef()
-    const { value } = useAuth();
+    const { value: { signup, signin, currentUser } } = useAuth()
+    const navigate = useNavigate()
 
     const [error, setError] = useState()
     const [loading, setLoading] = useState(false)
 
+    useEffect(() => {
+        if (currentUser) navigate('/')
+    }, [])
+
     async function handleSubmit(e) {
         e.preventDefault()
 
-        if (passwordRef.current.value.length < 6) {
+        if (nameRef?.current?.value && !nameRef?.current?.value.match(/^[a-zA-Z0-9]+$/)) {
+            return setError("กรุณาเฉพาะตัวอักษรหรือตัวเลข")
+        }
+        else if (nameRef?.current?.value && nameRef?.current?.value.length < 6) {
+            return setError("กรุณาใส่ชื่อยาวกว่า 6 ตัวอักษร")
+        }
+
+        if (passwordRef?.current?.value && passwordRef?.current?.value.length < 6) {
             return setError("กรุณาใส่รหัสยาวกว่า 6 ตัวอักษร")
         }
 
         try {
             setError("")
             setLoading(true)
-            await value.signup(nameRef.current.value, passwordRef.current.value)
+            await signin(nameRef?.current?.value, passwordRef?.current?.value)
+            navigate('/')
         }
         catch {
-            setError("ชื่อนี้ถูกใช้แล้ว หรือ รหัสผ่านผิด")
+            try {
+                await signup(nameRef?.current?.value, passwordRef?.current?.value)
+                navigate('/')
+            }
+            catch {
+                setError("ชื่อนี้ถูกใช้แล้ว หรือ รหัสผ่านผิด")
+            }
         }
 
         setLoading(false)
@@ -44,7 +65,7 @@ export default function Signin() {
                             <Form.Label>Password</Form.Label>
                             <Form.Control className="text-center" type="text" ref={passwordRef} required />
                         </Form.Group>
-                        <Button disabled={loading} className='w-100 ' type='submit'>Log in</Button>
+                        <Button disabled={loading} className='w-100' type='submit'>Log in</Button>
                     </Form>
                 </Card.Body>
             </Card>

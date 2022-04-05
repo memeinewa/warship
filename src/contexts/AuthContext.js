@@ -5,41 +5,47 @@ import { auth } from '../firebase'
 export const AuthContext = createContext()
 
 export const useAuth = () => {
-    const authContext = useContext(AuthContext);
-    return authContext;
+    const authContext = useContext(AuthContext)
+    return authContext
 }
 
 export default function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState()
+    const [loading, setLoading] = useState(true)
 
     function signup(username, password) {
-        const email = username + "@gmail.com";
-        return createUserWithEmailAndPassword(auth, email, password);
+        const email = username + "@gmail.com"
+        return createUserWithEmailAndPassword(auth, email, password)
+    }
+
+    function signin(username, password) {
+        const email = username + "@gmail.com"
+        return signInWithEmailAndPassword(auth, email, password)
+    }
+
+    function signout() {
+        return auth.signOut()
     }
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            console.log(user);
-            setCurrentUser(user);
+            setCurrentUser(user)
+            setLoading(false)
         })
 
         return unsubscribe
     }, [])
 
-    function signin(username, password) {
-        const email = username + "@gmail.com";
-        return signInWithEmailAndPassword(auth, email, password)
-    }
-
     const value = {
         currentUser,
         signup,
-        signin
+        signin,
+        signout
     }
 
     return (
         <AuthContext.Provider value={{ value }}>
-            {children}
+            {!loading && children}
         </AuthContext.Provider>
     )
 }
