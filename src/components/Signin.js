@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 export default function Signin() {
     const nameRef = useRef()
     const passwordRef = useRef()
-    const { value: { signup, signin, currentUser } } = useAuth()
+    const { value: { signUp, signIn, currentUser } } = useAuth()
     const navigate = useNavigate()
 
     const [error, setError] = useState()
@@ -34,12 +34,12 @@ export default function Signin() {
         try {
             setError("")
             setLoading(true)
-            await signin(nameRef?.current?.value, passwordRef?.current?.value)
+            await signIn(nameRef?.current?.value, passwordRef?.current?.value)
             navigate('/')
         }
         catch {
             try {
-                await signup(nameRef?.current?.value, passwordRef?.current?.value)
+                await signUp(nameRef?.current?.value, passwordRef?.current?.value)
                 navigate('/')
             }
             catch {
