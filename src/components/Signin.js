@@ -53,7 +53,7 @@ export default function Signin() {
     return (
         <>
             <h1 className='text-center mb-4'>WARSHIP</h1>
-            <Card className='bg-transparent'>
+            <Card className='bg-transparent border-0'>
                 <Card.Body>
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Form onSubmit={handleSubmit}>
