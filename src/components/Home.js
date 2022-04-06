@@ -29,8 +29,8 @@ export default function Home() {
         navigate('/howto')
     }
 
-    async function handleSetting() {
-        navigate('/setting')
+    async function handleRanking() {
+        navigate('/ranking')
     }
 
     return (
@@ -46,7 +46,7 @@ export default function Home() {
                         <Col><Button onClick={handleHowto} className='w-50 mb-4'>How to?</Button></Col>
                     </Row>
                     <Row>
-                        <Col><Button onClick={handleSetting} className='w-50'>Setting</Button></Col>
+                        <Col><Button onClick={handleRanking} className='w-50'>Ranking</Button></Col>
                     </Row>
                 </Card.Body>
             </Card>

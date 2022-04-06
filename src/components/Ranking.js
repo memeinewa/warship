@@ -1,7 +1,7 @@
 import { Button, Card } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 
-export default function Setting() {
+export default function Ranking() {
   const navigate = useNavigate()
 
   async function handleBack() {

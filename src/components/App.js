@@ -7,7 +7,7 @@ import Signin from "./Signin"
 import Home from "./Home"
 import Play from "./Play"
 import Howto from "./Howto"
-import Setting from "./Setting"
+import Ranking from "./Ranking"
 
 function App() {
   return (
@@ -30,9 +30,9 @@ function App() {
                 <Howto />
               </PrivateRoute>
             } />
-            <Route exact path='/setting' element={
+            <Route exact path='/ranking' element={
               <PrivateRoute>
-                <Setting />
+                <Ranking />
               </PrivateRoute>
             } />
             <Route path='/signIn' element={<Signin />} />
