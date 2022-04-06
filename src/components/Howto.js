@@ -1,6 +1,9 @@
 import { Button, Card } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 
+import howto1 from '../images/Howto1.png'
+import howto2 from '../images/Howto2.png'
+
 export default function Howto() {
     const navigate = useNavigate()
 
@@ -11,12 +14,13 @@ export default function Howto() {
     return (
         <>
             <h1 className='text-center mb-4'>WARSHIP</h1>
-            <Card className='text-center'>
-                <Card.Header className='d-flex flex-row-reverse' style={{ backgroundColor: 'white', borderBottom: '0' }}>
+            <Card className='text-center bg-transparent border-0'>
+                <Card.Header className='d-flex flex-row-reverse border-0 bg-transparent'>
                     <Button onClick={handleBack} className='btn btn-danger btn-sm'>X</Button>
                 </Card.Header>
-                <Card.Body>
-
+                <Card.Body className='border-0 padding-0' style={{ maxHeight: '400px', overflow: 'scroll', display: 'block' }}>
+                    <Card.Img style={{ position: 'relative', height: 'auto' }} src={howto1} alt={howto1} />
+                    <Card.Img style={{ position: 'relative', height: 'auto' }} src={howto2} alt={howto2} />
                 </Card.Body>
             </Card>
         </>

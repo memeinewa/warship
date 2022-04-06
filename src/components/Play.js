@@ -1,20 +1,11 @@
-import { Button, Card } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
+import { Card } from 'react-bootstrap'
 
 export default function Play() {
-    const navigate = useNavigate()
-
-    async function handleBack() {
-        navigate('/')
-    }
 
     return (
         <>
             <h1 className='text-center mb-4'>WARSHIP</h1>
-            <Card className='text-center'>
-                <Card.Header className='d-flex flex-row-reverse' style={{ backgroundColor: 'white', borderBottom: '0' }}>
-                    <Button onClick={handleBack} className='btn btn-danger btn-sm'>X</Button>
-                </Card.Header>
+            <Card className='text-center bg-transparent border-0'>
                 <Card.Body>
 
                 </Card.Body>

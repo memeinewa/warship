@@ -36,7 +36,7 @@ export default function Home() {
     return (
         <>
             <h1 className='text-center mb-4'>WARSHIP</h1>
-            <Card className='text-center'>
+            <Card className='text-center bg-transparent border-0'>
                 <Card.Body>
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Row>

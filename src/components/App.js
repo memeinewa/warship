@@ -8,38 +8,49 @@ import Home from "./Home"
 import Play from "./Play"
 import Howto from "./Howto"
 import Ranking from "./Ranking"
+import bg from "../images/bg.png"
 
 function App() {
   return (
-    <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
-      <div className="w-100" style={{ maxWidth: '420px' }}>
-        <AuthProvider>
-          <Routes>
-            <Route exact path='/' element={
-              <PrivateRoute>
+    <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh', backgroundImage: `url(${bg})`, maxWidth: '100%' }}>
+      <AuthProvider>
+        <Routes>
+          <Route exact path='/' element={
+            <PrivateRoute>
+              <div className="w-100" style={{ maxWidth: '420px' }}>
                 <Home />
-              </PrivateRoute>
-            } />
-            <Route exact path='/play' element={
-              <PrivateRoute>
+              </div>
+            </PrivateRoute>
+          } />
+          <Route exact path='/play' element={
+            <PrivateRoute>
+              <div className="w-100" style={{ maxWidth: '420px' }}>
                 <Play />
-              </PrivateRoute>
-            } />
-            <Route exact path='/howto' element={
-              <PrivateRoute>
+              </div>
+            </PrivateRoute>
+          } />
+          <Route exact path='/howto' element={
+            <PrivateRoute>
+              <div className="w-100" style={{ maxWidth: '800px' }}>
                 <Howto />
-              </PrivateRoute>
-            } />
-            <Route exact path='/ranking' element={
-              <PrivateRoute>
+              </div>
+            </PrivateRoute>
+          } />
+          <Route exact path='/ranking' element={
+            <PrivateRoute>
+              <div className="w-100" style={{ maxWidth: '420px' }}>
                 <Ranking />
-              </PrivateRoute>
-            } />
-            <Route path='/signIn' element={<Signin />} />
-          </Routes>
-        </AuthProvider>
-      </div>
-    </Container>
+              </div>
+            </PrivateRoute>
+          } />
+          <Route path='/signIn' element={
+            <div className="w-100" style={{ maxWidth: '420px' }}>
+              <Signin />
+            </div>
+          } />
+        </Routes>
+      </AuthProvider>
+    </Container >
   )
 }
 
