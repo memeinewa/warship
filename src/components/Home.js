@@ -21,6 +21,18 @@ export default function Home() {
         }
     }
 
+    async function handlePlay() {
+        navigate('/play')
+    }
+
+    async function handleHowto() {
+        navigate('/howto')
+    }
+
+    async function handleSetting() {
+        navigate('/setting')
+    }
+
     return (
         <>
             <h1 className='text-center mb-4'>WARSHIP</h1>
@@ -28,13 +40,13 @@ export default function Home() {
                 <Card.Body>
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Row>
-                        <Col><Button className='w-50 mb-4'>Play</Button></Col>
+                        <Col><Button onClick={handlePlay} className='w-50 mb-4'>Play</Button></Col>
                     </Row>
                     <Row>
-                        <Col><Button className='w-50 mb-4'>How to?</Button></Col>
+                        <Col><Button onClick={handleHowto} className='w-50 mb-4'>How to?</Button></Col>
                     </Row>
                     <Row>
-                        <Col><Button className='w-50'>Settings</Button></Col>
+                        <Col><Button onClick={handleSetting} className='w-50'>Setting</Button></Col>
                     </Row>
                 </Card.Body>
             </Card>

@@ -5,6 +5,9 @@ import AuthProvider from "../contexts/AuthContext"
 import PrivateRoute from "./PrivateRoute"
 import Signin from "./Signin"
 import Home from "./Home"
+import Play from "./Play"
+import Howto from "./Howto"
+import Setting from "./Setting"
 
 function App() {
   return (
@@ -15,6 +18,21 @@ function App() {
             <Route exact path='/' element={
               <PrivateRoute>
                 <Home />
+              </PrivateRoute>
+            } />
+            <Route exact path='/play' element={
+              <PrivateRoute>
+                <Play />
+              </PrivateRoute>
+            } />
+            <Route exact path='/howto' element={
+              <PrivateRoute>
+                <Howto />
+              </PrivateRoute>
+            } />
+            <Route exact path='/setting' element={
+              <PrivateRoute>
+                <Setting />
               </PrivateRoute>
             } />
             <Route path='/signIn' element={<Signin />} />
