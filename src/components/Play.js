@@ -23,7 +23,9 @@ export default function Play() {
             })
         }
         else {
-            room()
+            if (!playStatus) {
+                room()
+            }
         }
     }, [snapStatus])
 
