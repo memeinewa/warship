@@ -1,4 +1,4 @@
-import { Card } from 'react-bootstrap'
+import { Card, Spinner, Button } from 'react-bootstrap'
 import { collection, onSnapshot, setDoc, doc, getDoc, getDocs, query, updateDoc } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 
@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext'
 export default function Play() {
     const [snapStatus, setSnapStatus] = useState(false)
     const [playStatus, setPlayStatus] = useState(false)
+    const [isWaiting, setIsWaiting] = useState(true)
     const { value: { currentUser } } = useAuth()
     const player = currentUser.email.split("@")[0]
     let isPlayStatus = false
@@ -19,6 +20,7 @@ export default function Play() {
                 const hostData = snapshot.data()
                 if (hostData.guess) {
                     setPlayStatus(true)
+                    setIsWaiting(false)
                 }
             })
         }
@@ -72,6 +74,7 @@ export default function Play() {
             await updateDoc(docRef, { guess: player })
             isPlayStatus = true
             setPlayStatus(true)
+            setIsWaiting(false)
         }
     }
 
@@ -80,7 +83,13 @@ export default function Play() {
             <h1 className='text-center mb-4'>WARSHIP</h1>
             <Card className='text-center bg-transparent border-0'>
                 <Card.Body>
-
+                    {isWaiting && <Button variant="primary" disabled><Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                    />&nbsp;&nbsp;Waiting...</Button>}
                 </Card.Body>
             </Card>
         </>
