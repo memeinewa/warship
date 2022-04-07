@@ -1,4 +1,4 @@
-import { Button, Card } from 'react-bootstrap'
+import { Button, Card, Carousel } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 
 import howto1 from '../images/Howto1.png'
@@ -18,9 +18,15 @@ export default function Howto() {
                 <Card.Header className='d-flex flex-row-reverse border-0 bg-transparent'>
                     <Button onClick={handleBack} className='btn btn-danger btn-sm'>X</Button>
                 </Card.Header>
-                <Card.Body className='border-0 padding-0' style={{ maxHeight: '400px', overflow: 'scroll', display: 'block' }}>
-                    <Card.Img style={{ position: 'relative', height: 'auto' }} src={howto1} alt={howto1} />
-                    <Card.Img style={{ position: 'relative', height: 'auto' }} src={howto2} alt={howto2} />
+                <Card.Body className='border-0 padding-0' style={{ maxHeight: '400px', display: 'block' }}>
+                    <Carousel>
+                        <Carousel.Item>
+                            <Card.Img style={{ position: 'relative', height: 'auto' }} src={howto1} alt={howto1} />
+                        </Carousel.Item>
+                        <Carousel.Item>
+                            <Card.Img style={{ position: 'relative', height: 'auto' }} src={howto2} alt={howto2} />
+                        </Carousel.Item>
+                    </Carousel>
                 </Card.Body>
             </Card>
         </>
