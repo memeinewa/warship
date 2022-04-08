@@ -3,12 +3,13 @@ import { Route, Routes } from "react-router-dom"
 
 import AuthProvider from "../contexts/AuthContext"
 import PrivateRoute from "./PrivateRoute"
+import bg from "../images/bg.png"
 import Signin from "./Signin"
 import Home from "./Home"
 import Play from "./Play"
 import Howto from "./Howto"
 import Ranking from "./Ranking"
-import bg from "../images/bg.png"
+import Game from "./Game"
 
 function App() {
   return (
@@ -26,6 +27,13 @@ function App() {
             <PrivateRoute>
               <div className="w-100" style={{ maxWidth: '420px' }}>
                 <Play />
+              </div>
+            </PrivateRoute>
+          } />
+          <Route exact path='/game' element={
+            <PrivateRoute>
+              <div className="w-100" style={{ maxWidth: '420px' }}>
+                <Game />
               </div>
             </PrivateRoute>
           } />

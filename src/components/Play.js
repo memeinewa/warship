@@ -1,5 +1,6 @@
 import { Card, Spinner, Button } from 'react-bootstrap'
-import { collection, onSnapshot, setDoc, doc, getDoc, getDocs, query, updateDoc } from 'firebase/firestore'
+import { collection, onSnapshot, setDoc, doc, getDoc, getDocs, query, updateDoc, deleteDoc } from 'firebase/firestore'
+import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 
 import { db } from '../firebase'
@@ -7,35 +8,57 @@ import { useAuth } from '../contexts/AuthContext'
 
 export default function Play() {
     const [snapStatus, setSnapStatus] = useState(false)
-    const [playStatus, setPlayStatus] = useState(false)
+    const [isPlaying, setIsPlaying] = useState(false)
     const [isWaiting, setIsWaiting] = useState(true)
+    const navigate = useNavigate()
     const { value: { currentUser } } = useAuth()
     const player = currentUser.email.split("@")[0]
     let isPlayStatus = false
 
     useEffect(() => {
+        isPlayingGame()
+    }, [snapStatus])
+
+    useEffect(() => {
+        if (isPlaying) {
+            navigate('/game')
+        }
+    }, [isPlaying])
+
+    const isPlayingGame = async () => {
+        const q = query(collection(db, 'playing'))
+        const querySnapshot = await getDocs(q)
+        if (querySnapshot.docs.length) {
+            const isPlayingGame = querySnapshot.docs.find(v => {
+                return v.data().host === player || v.data().guess === player
+            })
+            if (isPlayingGame) {
+                navigate('/game')
+            }
+        }
+        else {
+            isSnapshotRoom()
+        }
+    }
+
+    const isSnapshotRoom = () => {
         if (snapStatus) {
             const docRef = doc(db, 'waiting', player)
             onSnapshot(docRef, async (snapshot) => {
                 const hostData = snapshot.data()
-                if (hostData.guess) {
-                    setPlayStatus(true)
+                if (hostData?.guess) {
+                    await createGame(hostData?.guess)
+                    setIsPlaying(true)
                     setIsWaiting(false)
                 }
             })
         }
         else {
-            if (!playStatus) {
+            if (!isPlaying) {
                 room()
             }
         }
-    }, [snapStatus])
-
-    useEffect(() => {
-        if (playStatus) {
-            console.log('do play')
-        }
-    }, [playStatus])
+    }
 
     const room = async () => {
         const q = query(collection(db, 'waiting'))
@@ -66,6 +89,21 @@ export default function Play() {
         }
     }
 
+    const createGame = async (guess) => {
+        const docRef = doc(db, 'playing', player)
+        const docSnap = await getDoc(docRef)
+        if (!docSnap.exists()) {
+            const payload = { host: player, guess }
+            await setDoc(docRef, payload)
+            await deleteWaitingRoom()
+        }
+    }
+
+    const deleteWaitingRoom = async () => {
+        const docRef = doc(db, 'waiting', player)
+        await deleteDoc(docRef)
+    }
+
     const joiningRoom = async (docs) => {
         if (!isPlayStatus) {
             const randomRoom = Math.floor(Math.random() * docs.length)
@@ -73,7 +111,7 @@ export default function Play() {
             const docRef = doc(db, 'waiting', roomName)
             await updateDoc(docRef, { guess: player })
             isPlayStatus = true
-            setPlayStatus(true)
+            setIsPlaying(true)
             setIsWaiting(false)
         }
     }
