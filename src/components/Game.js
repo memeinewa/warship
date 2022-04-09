@@ -38,6 +38,8 @@ export default function Game() {
         if (isPlayingGame.data().expireDate.seconds < Math.floor(Date.now() / 1000)) {
           setGameExpired(true)
           setModalShow(true)
+          const docRef = doc(db, 'playing', isPlayingGame.data().host)
+          await deleteDoc(docRef)
         }
         else {
           setCountDown(isPlayingGame.data().expireDate.seconds - Math.floor(Date.now() / 1000))
