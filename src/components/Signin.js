@@ -3,6 +3,7 @@ import { Button, Card, Form, Alert } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../contexts/AuthContext'
+import '../css/fonts.css'
 
 export default function Signin() {
     const nameRef = useRef()
@@ -50,6 +51,28 @@ export default function Signin() {
         setLoading(false)
     }
 
+    const buttonStyle = {
+        backgroundColor: 'orange',
+        borderRadius: '50px',
+        fontWeight: 'bold',
+        fontSize: '20px',
+        fontStyle: 'italic',
+        fontFamily: 'Bangers',
+        boxShadow: '5px 10px #cc7512'
+    }
+
+    const textInputStyle = {
+        borderRadius: '50px'
+    }
+
+    const fontLabelStyle = {
+        fontWeight: 'bold',
+        fontSize: '20px',
+        fontStyle: 'italic',
+        fontFamily: 'Bangers',
+        color: 'white'
+    }
+
     return (
         <>
             <h1 className='text-center mb-4'>WARSHIP</h1>
@@ -58,14 +81,16 @@ export default function Signin() {
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Form onSubmit={handleSubmit}>
                         <Form.Group id="name" className='text-center mb-4'>
-                            <Form.Label>Name</Form.Label>
-                            <Form.Control className="text-center" type="text" ref={nameRef} required />
+                            <Form.Label style={fontLabelStyle}>N a m e</Form.Label>
+                            <Form.Control className="text-center" type="text" ref={nameRef} style={textInputStyle} required />
                         </Form.Group>
                         <Form.Group id="password" className='text-center mb-4'>
-                            <Form.Label>Password</Form.Label>
-                            <Form.Control className="text-center" type="password" ref={passwordRef} required />
+                            <Form.Label style={fontLabelStyle}>P a s s w o r d</Form.Label>
+                            <Form.Control className="text-center" type="password" ref={passwordRef} style={textInputStyle} required />
                         </Form.Group>
-                        <Button disabled={loading} className='w-100' type='submit'>Log in</Button>
+                        <Form.Group className='text-center mb-4'>
+                            <Button disabled={loading} className='w-50' type='submit' style={buttonStyle}>L o g  i n</Button>
+                        </Form.Group>
                     </Form>
                 </Card.Body>
             </Card>

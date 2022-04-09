@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { collection, onSnapshot, setDoc, doc, getDoc, getDocs, query, updateDoc, deleteDoc } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
-import { Modal, Button } from 'react-bootstrap'
+import { Modal, Button, Container, Card } from 'react-bootstrap'
 
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
+import '../css/fonts.css'
 
 export default function Game() {
   const [gameExpired, setGameExpired] = useState(false)
@@ -87,9 +88,18 @@ export default function Game() {
           </Modal.Footer>
         </Modal>
       }
-      {!gameExpired && <div>
-        <div>Time {getCownDownValues(countDown)}</div>
-      </div>}
+      {!gameExpired && <Container>
+        <h1 className='text-center mb-4'>WARSHIP</h1>
+        <Card className='text-center bg-transparent border-0'>
+          <Card.Header>Time {getCownDownValues(countDown)}</Card.Header>
+          <Card.Body>
+            <div>TABLE 2</div>
+            <div>TABLE 1</div>
+            <Button>Random</Button>
+            <Button>Accept</Button>
+          </Card.Body>
+        </Card>
+      </Container>}
     </>
   )
 }

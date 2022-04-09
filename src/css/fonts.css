@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Montserrat&display=swap');
+
+h1 {
+    font-family: 'Bangers', cursive;
+    font-size: 6rem;
+    color: white;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}

@@ -32,7 +32,7 @@ function App() {
           } />
           <Route exact path='/game' element={
             <PrivateRoute>
-              <div className="w-100" style={{ maxWidth: '420px' }}>
+              <div className="w-100" style={{ maxWidth: '800px' }}>
                 <Game />
               </div>
             </PrivateRoute>
