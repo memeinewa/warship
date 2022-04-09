@@ -8,14 +8,16 @@ import { useAuth } from '../contexts/AuthContext'
 
 export default function Game() {
   const [gameExpired, setGameExpired] = useState(false)
-  const [countDown, setCountDown] = useState(600000)
+  const [countDown, setCountDown] = useState(0)
   const [modalShow, setModalShow] = useState(false)
   const { value: { currentUser } } = useAuth()
   const navigate = useNavigate()
   const player = currentUser.email.split("@")[0]
 
   useEffect(() => {
-    isGameExpired()
+    setTimeout(() => {
+      isGameExpired()
+    }, 500)
   }, [])
 
   useEffect(() => {
@@ -49,6 +51,10 @@ export default function Game() {
         setGameExpired(true)
         setModalShow(true)
       }
+    }
+    else {
+      setGameExpired(true)
+      setModalShow(true)
     }
   }
 
