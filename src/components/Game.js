@@ -25,9 +25,17 @@ export default function Game() {
       if (countDown > 0) {
         setCountDown(countDown - 1);
       }
+      else {
+        goExpire()
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, [countDown])
+
+  const goExpire = () => {
+    setGameExpired(true)
+    setModalShow(true)
+  }
 
   const isGameExpired = async () => {
     const q = query(collection(db, 'playing'))
@@ -38,8 +46,7 @@ export default function Game() {
       })
       if (isPlayingGame) {
         if (isPlayingGame.data().expireDate.seconds < Math.floor(Date.now() / 1000)) {
-          setGameExpired(true)
-          setModalShow(true)
+          goExpire()
           const docRef = doc(db, 'playing', isPlayingGame.data().host)
           await deleteDoc(docRef)
         }
@@ -48,13 +55,11 @@ export default function Game() {
         }
       }
       else {
-        setGameExpired(true)
-        setModalShow(true)
+        goExpire()
       }
     }
     else {
-      setGameExpired(true)
-      setModalShow(true)
+      goExpire()
     }
   }
 
