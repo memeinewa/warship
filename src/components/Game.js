@@ -18,16 +18,16 @@ export default function Game() {
   useEffect(() => {
     setTimeout(() => {
       isGameExpired()
-    }, 500)
+    }, 1000)
   }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (countDown > 0) {
-        setCountDown(countDown - 1);
+      if (countDown < 0) {
+        goExpire()
       }
       else {
-        goExpire()
+        setCountDown(countDown - 1);
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -69,6 +69,9 @@ export default function Game() {
     const seconds = Math.floor(countDown % 60)
     let display = minutes < 10 ? `0${minutes}` : `${minutes}`
     display = seconds < 10 ? `${display}:0${seconds}` : `${display}:${seconds}`
+    if (minutes < 0 || seconds < 0) {
+      display = '00:00'
+    }
     return display;
   };
 
