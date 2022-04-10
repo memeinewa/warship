@@ -9,7 +9,7 @@ import '../css/fonts.css'
 
 export default function Game() {
   const [gameExpired, setGameExpired] = useState(false)
-  const [countDown, setCountDown] = useState(0)
+  const [countDown, setCountDown] = useState(5)
   const [modalShow, setModalShow] = useState(false)
   const { value: { currentUser } } = useAuth()
   const navigate = useNavigate()
