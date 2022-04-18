@@ -8,11 +8,8 @@ import { useAuth } from '../contexts/AuthContext'
 import '../css/fonts.css'
 
 export default function Game() {
-  const [history, setHistory] = useState([Array(25).fill(null)])
   const [yourSquars, setYourSquars] = useState([])
   const [opponentSquars, setOpponentSquars] = useState([])
-  const [turnBase, setTurnBase] = useState("")
-  const [stepNumber, setStepNumber] = useState(0)
   const [gameExpired, setGameExpired] = useState(false)
   const [countDown, setCountDown] = useState(5)
   const [modalShow, setModalShow] = useState(false)
@@ -90,51 +87,26 @@ export default function Game() {
     navigate('/')
   }
 
-  const boardStyle = {
-    width: '350px',
-    height: '350px',
-    display: 'grid',
-    gridTemplate: 'repeat(' + width + ', 1fr) / repeat(' + width + ', 1fr)',
-  }
-
   const boardGrid = {
-
+    padding: '0',
+    width: '300px',
+    height: '300px',
+    display: 'grid',
+    backgroundColor: 'hsl(200, 100%, 50%)',
+    gridTemplateRows: 'repeat(' + width + ', 1fr)',
+    gridTemplateColumns: 'repeat(' + width + ', 1fr)'
   }
 
-  const Board = ({ squares, onClick = () => { }, role }) => {
+  const Board = ({ squares, role }) => {
     const _squares = []
     for (var i = 0; i < width * width; i++) {
       const _currentSquare = <div id={i} style={{ border: '1px solid hsla(0, 0%, 100%, .2)' }} />
       _squares.push(_currentSquare)
-      // if (role === boardRole.yourBoard) {
-      //   setYourSquars(yourSquars => [...yourSquars, _currentSquare])
-      // }
-      // else if (role === boardRole.opponentBoard) {
-      //   setOpponentSquars(opponentSquars => [...opponentSquars, _currentSquare])
-      // }
     }
     return (
-      <div className={role} style={{ padding: '0', width: '300px', height: '300px', display: 'grid', backgroundColor: 'hsl(200, 100%, 50%)', gridTemplateRows: 'repeat(' + width + ', 1fr)', gridTemplateColumns: 'repeat(' + width + ', 1fr)' }}>
+      <div className={role} style={boardGrid}>
         {_squares}
       </div>
-    )
-    // return (
-    //   <div style={boardStyle}>
-    //     {squares.map((square, i) => {
-    //       return (
-    //         <Square key={i} value={square} onClick={() => onClick(i)} />
-    //       )
-    //     })}
-    //   </div>
-    // )
-  }
-
-  const Square = ({ value, onClick }) => {
-    const style = value ? `squares ${value}` : `squares`
-    return (
-      <button className={style} onClick={onClick}>
-        {value}
-      </button>
     )
   }
 
@@ -159,15 +131,6 @@ export default function Game() {
 
   const acceptNext = () => {
     console.log('accept next')
-  }
-
-  const handleClick = (i) => {
-    const historyPoint = history.slice(0, stepNumber + 1)
-    const current = historyPoint[stepNumber]
-    const squares = [...current]
-    squares[i] = 'X'
-    setHistory([...historyPoint, squares])
-    setStepNumber(historyPoint.length)
   }
 
   return (
