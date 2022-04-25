@@ -13,6 +13,7 @@ export default function Game() {
   const [countDown, setCountDown] = useState(5)
   const [modalShow, setModalShow] = useState(false)
   const [acceptPosistion, setAcceptPosition] = useState(false)
+  const [yourTurn, setYourTurn] = useState(false)
   const { value: { currentUser } } = useAuth()
   const navigate = useNavigate()
   const player = currentUser.email.split("@")[0]
@@ -201,7 +202,7 @@ export default function Game() {
     for (let i = 0; i < width * width; i++) {
       console.log(document.getElementById('y' + (i)).classList.value)
     }
-    // setAcceptPosition(true)
+    setAcceptPosition(true)
   }
 
   return (
@@ -227,9 +228,9 @@ export default function Game() {
           </Card.Header>
           <Card.Body>
             <Row className='mb-3'>
-              {/* <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>prepare your board</p> */}
-              {/* <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>your turn</p> */}
-              <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>choose space to fire your opponent</p>
+              {!acceptPosistion && <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>prepare your board</p>}
+              {acceptPosistion && yourTurn && <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>your turn</p>}
+              {acceptPosistion && !yourTurn && <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>choose space to fire your opponent</p>}
             </Row>
             <Row className='d-flex justify-content-center'>
               <Col>
@@ -250,12 +251,6 @@ export default function Game() {
               </Col>
             </Row>
             <Row>
-              {acceptPosistion &&
-                <Container>
-                  <Row className='mt-4 justify-content-center'>
-                    {/* <Button style={buttonStyle} onClick={acceptNext}>a c c e p t</Button> */}
-                  </Row>
-                </Container>}
               {!acceptPosistion &&
                 <Container>
                   <Row className='mt-4 mb-4 justify-content-center'>

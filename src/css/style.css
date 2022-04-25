@@ -114,19 +114,19 @@ body {
 }
 
 .taken.horizontal::before {
-  animation: ripplesY 3s linear infinite;
+  animation: ripplesY 1.5s linear infinite;
   border-left: none;
   border-right: none;
 }
 
 .taken.vertical::before {
-  animation: ripplesX 3s linear infinite;
+  animation: ripplesX 1.5s linear infinite;
   border-top: none;
   border-bottom: none;
 }
 
 .taken.center::before {
-  animation: ripplesXY 3s linear infinite;
+  animation: ripplesXY 1.5s linear infinite;
 }
 
 @keyframes ripplesXY {
