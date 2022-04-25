@@ -6,10 +6,9 @@ import { Modal, Button, Container, Card, Row, Col } from 'react-bootstrap'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import '../css/fonts.css'
+import '../css/style.css'
 
 export default function Game() {
-  const [yourSquars, setYourSquars] = useState([])
-  const [opponentSquars, setOpponentSquars] = useState([])
   const [gameExpired, setGameExpired] = useState(false)
   const [countDown, setCountDown] = useState(5)
   const [modalShow, setModalShow] = useState(false)
@@ -17,10 +16,79 @@ export default function Game() {
   const { value: { currentUser } } = useAuth()
   const navigate = useNavigate()
   const player = currentUser.email.split("@")[0]
-  const width = 5
+  const width = 6
   const boardRole = {
     "yourBoard": "yourBoard",
     "opponentBoard": "opponentBoard"
+  }
+
+  const shipArray = [
+    {
+      name: 'destroyer',
+      directions: [
+        [0],
+        [0]
+      ]
+    },
+    {
+      name: 'submarine',
+      directions: [
+        [0, 1],
+        [0, width]
+      ]
+    },
+    {
+      name: 'battleship',
+      directions: [
+        [0, 1, 2],
+        [0, width, width * 2]
+      ]
+    },
+  ]
+
+  const generate = (ship) => {
+    let randomDirection = Math.floor(Math.random() * ship.directions.length)
+    let current = ship.directions[randomDirection]
+    let direction = 1
+    if (randomDirection === 0) direction = 1
+    if (randomDirection === 1) direction = 5
+    let randomStart = Math.abs(Math.floor(Math.random() * (width * width - 1) - (ship.directions[0].length * direction)))
+    const isTaken = current.some(index => document.getElementById('y' + (randomStart + index)).classList.contains('taken'))
+    const isAtRightEdge = current.some(index => (randomStart + index) % width === width - 1)
+    const isAtLeftEdge = current.some(index => (randomStart + index) % width === 0)
+
+    if (!isTaken && !isAtRightEdge && !isAtLeftEdge) {
+      if (current.length > 1) {
+        let directionLine = current[1] - current[0] === 1 ? 'horizontal' : 'vertical'
+        current.forEach((value, index) => {
+          const _direction = ship.directions[0]
+          let directionClass
+          if (index === 0) directionClass = 'start'
+          if (index === _direction.length - 1) directionClass = 'end'
+          return document.getElementById('y' + (randomStart + value)).setAttribute("class", `taken ${directionClass} ${directionLine} ${ship.name}`)
+        })
+      }
+      else {
+        return document.getElementById('y' + (randomStart)).setAttribute("class", `taken center ${ship.name}`)
+      }
+    }
+    else generate(ship)
+  }
+
+  const resetBoard = () => {
+    for (let i = 0; i < width * width; i++) {
+      document.getElementById('y' + (i)).setAttribute("class", "")
+    }
+  }
+
+  const randomPosition = () => {
+    resetBoard()
+    generate(shipArray[0])
+    generate(shipArray[0])
+    generate(shipArray[0])
+    generate(shipArray[1])
+    generate(shipArray[1])
+    generate(shipArray[2])
   }
 
   useEffect(() => {
@@ -97,10 +165,17 @@ export default function Game() {
     gridTemplateColumns: 'repeat(' + width + ', 1fr)'
   }
 
-  const Board = ({ squares, role }) => {
+  const onClickSquare = (e) => {
+    if (e.currentTarget.id.indexOf('o') !== -1) {
+      console.log(e.currentTarget.id)
+      document.getElementById(e.currentTarget.id).setAttribute("class", "boom")
+    }
+  }
+
+  const Board = ({ role }) => {
     const _squares = []
     for (var i = 0; i < width * width; i++) {
-      const _currentSquare = <div id={i} style={{ border: '1px solid hsla(0, 0%, 100%, .2)' }} />
+      const _currentSquare = <div id={(role === boardRole.opponentBoard ? 'o' : 'y') + i} style={{ border: '1px solid hsla(0, 0%, 100%, .2)' }} onClick={onClickSquare} />
       _squares.push(_currentSquare)
     }
     return (
@@ -121,16 +196,12 @@ export default function Game() {
     width: '200px'
   }
 
-  const randomPosition = () => {
-    console.log('random')
-  }
-
   const acceptPosition = () => {
-    setAcceptPosition(true)
-  }
-
-  const acceptNext = () => {
-    console.log('accept next')
+    console.log('accept')
+    for (let i = 0; i < width * width; i++) {
+      console.log(document.getElementById('y' + (i)).classList.value)
+    }
+    // setAcceptPosition(true)
   }
 
   return (
@@ -166,7 +237,7 @@ export default function Game() {
                   <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>Your Board</p>
                 </Row>
                 <Row className='d-flex justify-content-center'>
-                  <Board squares={yourSquars} role={'yourBoard'} />
+                  <Board role={'yourBoard'} />
                 </Row>
               </Col>
               <Col>
@@ -174,7 +245,7 @@ export default function Game() {
                   <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>Opponent Board</p>
                 </Row>
                 <Row className='d-flex justify-content-center'>
-                  <Board squares={opponentSquars} role={'opponentBoard'} />
+                  <Board role={'opponentBoard'} />
                 </Row>
               </Col>
             </Row>
@@ -182,7 +253,7 @@ export default function Game() {
               {acceptPosistion &&
                 <Container>
                   <Row className='mt-4 justify-content-center'>
-                    <Button style={buttonStyle} onClick={acceptNext}>a c c e p t</Button>
+                    {/* <Button style={buttonStyle} onClick={acceptNext}>a c c e p t</Button> */}
                   </Row>
                 </Container>}
               {!acceptPosistion &&
