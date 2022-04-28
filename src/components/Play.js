@@ -30,7 +30,7 @@ export default function Play() {
         const querySnapshot = await getDocs(q)
         if (querySnapshot.docs.length) {
             const isPlayingGame = querySnapshot.docs.find(v => {
-                return v.data().host === player || v.data().guess === player
+                return v.data().host === player || v.data().guest === player
             })
             if (isPlayingGame) {
                 navigate('/game')
@@ -46,8 +46,8 @@ export default function Play() {
             const docRef = doc(db, 'waiting', player)
             onSnapshot(docRef, async (snapshot) => {
                 const hostData = snapshot.data()
-                if (hostData?.guess) {
-                    await createGame(hostData?.guess)
+                if (hostData?.guest) {
+                    await createGame(hostData?.guest)
                     setIsPlaying(true)
                     setIsWaiting(false)
                 }
@@ -89,12 +89,12 @@ export default function Play() {
         }
     }
 
-    const createGame = async (guess) => {
+    const createGame = async (guest) => {
         const docRef = doc(db, 'playing', player)
         const docSnap = await getDoc(docRef)
         if (!docSnap.exists()) {
             const expireDate = new Date(Date.now() + 60 * 1000 * 10)
-            const payload = { host: player, guess, expireDate }
+            const payload = { host: player, guest, expireDate }
             await setDoc(docRef, payload)
             await deleteWaitingRoom()
         }
@@ -110,7 +110,7 @@ export default function Play() {
             const randomRoom = Math.floor(Math.random() * docs.length)
             const roomName = docs[randomRoom].id
             const docRef = doc(db, 'waiting', roomName)
-            await updateDoc(docRef, { guess: player })
+            await updateDoc(docRef, { guest: player })
             isPlayStatus = true
             setIsPlaying(true)
             setIsWaiting(false)
