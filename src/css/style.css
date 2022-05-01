@@ -77,6 +77,11 @@ body {
   background-color: hsl(0, 0%, 80%);
 }
 
+.defend {
+  position: relative;
+  background-color: hsl(120, 20%, 1%);
+}
+
 .taken.start.vertical,
 .taken.start.vertical::before {
   border-top-left-radius: 50%;
