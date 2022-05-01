@@ -135,10 +135,16 @@ export default function Game() {
 
   useEffect(() => {
     if (winner) {
-      setAlertWinnerState(true);
-      setModalShowWinnerState(true);
+      endGame();
     }
   }, [winner]);
+
+  const endGame = async () => {
+    const docRef = doc(db, 'playing', hostname)
+    await deleteDoc(docRef)
+    setAlertWinnerState(true);
+    setModalShowWinnerState(true);
+  }
 
   const playingGame = () => {
     const docRef = doc(db, 'playing', hostname);
