@@ -44,13 +44,13 @@ function App() {
               </div>
             </PrivateRoute>
           } />
-          <Route exact path='/ranking' element={
+          {/* <Route exact path='/ranking' element={
             <PrivateRoute>
               <div className="w-100" style={{ maxWidth: '420px' }}>
                 <Ranking />
               </div>
             </PrivateRoute>
-          } />
+          } /> */}
           <Route path='/signIn' element={
             <div className="w-100" style={{ maxWidth: '420px' }}>
               <Signin />
