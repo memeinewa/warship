@@ -34,6 +34,9 @@ export default function Game() {
   const [gamePhase, setGamePhase] = useState(0);
   const [yourRanking, setYourRanking] = useState(0);
   const [otherRanking, setOtherRanking] = useState(0);
+  const [alertExpireState, setAlertExpireState] = useState(false);
+  const [modalShowExpireState, setModalShowExpireState] = useState(false);
+  const [retryFindingHost, setRetryFindingHost] = useState(0);
   const { value: { currentUser } } = useAuth();
   const navigate = useNavigate();
   const player = currentUser.email.split("@")[0];
@@ -62,6 +65,22 @@ export default function Game() {
       ]
     },
   ];
+
+  useEffect(() => {
+    if (!isFoundHost && retryFindingHost) {
+      setAlertExpireState(true);
+      setModalShowExpireState(true);
+    }
+  }, [isFoundHost, retryFindingHost])
+
+  const checkExpire = async (data) => {
+    if (data.expireDate.seconds < Math.floor(Date.now() / 1000)) {
+      const docPlayingRef = doc(db, 'playing', hostname);
+      await deleteDoc(docPlayingRef);
+      setAlertExpireState(true);
+      setModalShowExpireState(true);
+    }
+  }
 
   useEffect(() => {
     if (!isFoundHost) {
@@ -114,6 +133,7 @@ export default function Game() {
       }
     }
     else {
+      setRetryFindingHost(retryFindingHost + 1);
       setIsFoundHost(false);
     }
   }
@@ -184,7 +204,6 @@ export default function Game() {
       else {
         let rankingData = docRankingSnap.data();
         rankingData.point = rankingData.point + 1;
-        console.log(rankingData.point);
         await setDoc(docRankingRef, rankingData);
       }
     }
@@ -198,6 +217,7 @@ export default function Game() {
     const docRef = doc(db, 'playing', hostname);
     onSnapshot(docRef, async (snapshot) => {
       const snapData = snapshot.data();
+      checkExpire(snapData);
       findWinner(snapData);
       setCurrentData(snapData);
       gameEventState(snapData);
@@ -497,6 +517,10 @@ export default function Game() {
     navigate('/');
   }
 
+  const closeAlertExpireState = () => {
+    navigate('/');
+  }
+
   const boardGrid = {
     padding: '0',
     width: '300px',
@@ -587,6 +611,16 @@ export default function Game() {
             </Modal.Header>
             <Modal.Footer>
               <Button onClick={closeAlertDefendState}>Close</Button>
+            </Modal.Footer>
+          </Modal>
+        }
+        {
+          alertExpireState && <Modal show={modalShowExpireState} >
+            <Modal.Header closeButton>
+              <Modal.Title>เกมหมดเวลาเล่นแล้ว</Modal.Title>
+            </Modal.Header>
+            <Modal.Footer>
+              <Button onClick={closeAlertExpireState}>Close</Button>
             </Modal.Footer>
           </Modal>
         }
