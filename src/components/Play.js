@@ -93,7 +93,7 @@ export default function Play() {
         const docRef = doc(db, 'playing', player)
         const docSnap = await getDoc(docRef)
         if (!docSnap.exists()) {
-            const expireDate = new Date(Date.now() + 60 * 1000 * 10)
+            const expireDate = new Date(Date.now() + 60 * 1000 * 15)
             const payload = { host: player, guest, expireDate }
             await setDoc(docRef, payload)
             await deleteWaitingRoom()
