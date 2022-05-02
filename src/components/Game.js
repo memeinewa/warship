@@ -37,10 +37,17 @@ export default function Game() {
   const [alertExpireState, setAlertExpireState] = useState(false);
   const [modalShowExpireState, setModalShowExpireState] = useState(false);
   const [retryFindingHost, setRetryFindingHost] = useState(0);
+  const [numberOfOwnShip1, setNumberOfOwnShip1] = useState(3);
+  const [numberOfOwnShip2, setNumberOfOwnShip2] = useState(4);
+  const [numberOfOwnShip3, setNumberOfOwnShip3] = useState(3);
+  const [numberOfOtherShip1, setNumberOfOtherShip1] = useState(3);
+  const [numberOfOtherShip2, setNumberOfOtherShip2] = useState(4);
+  const [numberOfOtherShip3, setNumberOfOtherShip3] = useState(3);
   const { value: { currentUser } } = useAuth();
   const navigate = useNavigate();
   const player = currentUser.email.split("@")[0];
   const width = 6;
+  const maxShip1 = 3, maxShip2 = 4, maxShip3 = 3;
 
   const shipArray = [
     {
@@ -115,6 +122,44 @@ export default function Game() {
     else {
       if (player2 === player) setYourRanking(0);
       else setOtherRanking(0);
+    }
+  }
+
+  const updateNumberOfShip = (snapData) => {
+    const hostSet = snapData?.gameInfo?.gameSet.host;
+    const guestSet = snapData?.gameInfo?.gameSet.guest;
+    const hostPlay = snapData?.gameInfo?.gamePlay.host;
+    const guestPlay = snapData?.gameInfo?.gamePlay.guest;
+    let hostShip1 = 0, hostShip2 = 0, hostShip3 = 0;
+    let guestShip1 = 0, guestShip2 = 0, guestShip3 = 0;
+
+    for (const i in hostSet) {
+      if (guestPlay[i] === 'x' && hostSet[i].indexOf("destroyer") >= 0) hostShip1++;
+      if (guestPlay[i] === 'x' && hostSet[i].indexOf("submarine") >= 0) hostShip2++;
+      if (guestPlay[i] === 'x' && hostSet[i].indexOf("battleship") >= 0) hostShip3++;
+    }
+
+    for (const i in guestSet) {
+      if (hostPlay[i] === 'x' && guestSet[i].indexOf("destroyer") >= 0) guestShip1++;
+      if (hostPlay[i] === 'x' && guestSet[i].indexOf("submarine") >= 0) guestShip2++;
+      if (hostPlay[i] === 'x' && guestSet[i].indexOf("battleship") >= 0) guestShip3++;
+    }
+
+    if (hostname === player) {
+      setNumberOfOwnShip1(maxShip1 - hostShip1);
+      setNumberOfOwnShip3(maxShip2 - hostShip2);
+      setNumberOfOwnShip3(maxShip3 - hostShip3);
+      setNumberOfOtherShip1(maxShip1 - guestShip1);
+      setNumberOfOtherShip2(maxShip2 - guestShip2);
+      setNumberOfOtherShip3(maxShip3 - guestShip3);
+    }
+    else {
+      setNumberOfOwnShip1(maxShip1 - guestShip1);
+      setNumberOfOwnShip3(maxShip2 - guestShip2);
+      setNumberOfOwnShip3(maxShip3 - guestShip3);
+      setNumberOfOtherShip1(maxShip1 - hostShip1);
+      setNumberOfOtherShip2(maxShip2 - hostShip2);
+      setNumberOfOtherShip3(maxShip3 - hostShip3);
     }
   }
 
@@ -221,6 +266,7 @@ export default function Game() {
       findWinner(snapData);
       setCurrentData(snapData);
       gameEventState(snapData);
+      updateNumberOfShip(snapData);
     })
   }
 
@@ -677,6 +723,23 @@ export default function Game() {
                 </Container>}
             </Row>
           </Card.Body>
+          <Card.Footer>
+            {
+              gameState === "playing" &&
+              <Row>
+                <Col>
+                  <Row><p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>ship 1&nbsp;&nbsp;x&nbsp;&nbsp;{numberOfOwnShip1}</p></Row>
+                  <Row><p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>ship 2&nbsp;&nbsp;x&nbsp;&nbsp;{numberOfOwnShip2}</p></Row>
+                  <Row><p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>ship 3&nbsp;&nbsp;x&nbsp;&nbsp;{numberOfOwnShip3}</p></Row>
+                </Col>
+                <Col>
+                  <Row><p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>ship 1&nbsp;&nbsp;x&nbsp;&nbsp;{numberOfOtherShip1}</p></Row>
+                  <Row><p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>ship 2&nbsp;&nbsp;x&nbsp;&nbsp;{numberOfOtherShip2}</p></Row>
+                  <Row><p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>ship 3&nbsp;&nbsp;x&nbsp;&nbsp;{numberOfOtherShip3}</p></Row>
+                </Col>
+              </Row>
+            }
+          </Card.Footer>
         </Card>
       </Container>
     </>
