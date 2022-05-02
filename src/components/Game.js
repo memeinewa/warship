@@ -20,14 +20,20 @@ export default function Game() {
   const [myRole, setMyRole] = useState("");
   const [hostname, setHostname] = useState("");
   const [winner, setWinner] = useState("");
+  const [defendFill, setDefendFill] = useState(-1);
+  const [messageDefend, setMessageDefend] = useState("");
   const [alertErrorState, setAlertErrorState] = useState(false);
   const [modalShowErrorState, setModalShowErrorState] = useState(false);
   const [alertWinnerState, setAlertWinnerState] = useState(false);
   const [modalShowWinnerState, setModalShowWinnerState] = useState(false);
   const [alertFireState, setAlertFireState] = useState(false);
   const [modalShowFireState, setModalShowFireState] = useState(false);
+  const [alertDefendState, setAlertDefendState] = useState(false);
+  const [modalShowDefendState, setModalShowDefendState] = useState(false);
   const [whoseTurn, setWhoseTurn] = useState("");
   const [gamePhase, setGamePhase] = useState(0);
+  const [yourRanking, setYourRanking] = useState(0);
+  const [otherRanking, setOtherRanking] = useState(0);
   const { value: { currentUser } } = useAuth();
   const navigate = useNavigate();
   const player = currentUser.email.split("@")[0];
@@ -70,6 +76,29 @@ export default function Game() {
     }
   }, [isFoundHost])
 
+  const setAllRanking = async (player1, player2) => {
+    const player1Ref = doc(db, 'ranking', player1);
+    const player2Ref = doc(db, 'ranking', player2);
+    const player1Snap = await getDoc(player1Ref);
+    const player2Snap = await getDoc(player2Ref);
+    if (player1Snap.exists()) {
+      if (player1 === player) setYourRanking(player1Snap.data().point);
+      else setOtherRanking(player1Snap.data().point);
+    }
+    else {
+      if (player1 === player) setYourRanking(0);
+      else setOtherRanking(0);
+    }
+    if (player2Snap.exists()) {
+      if (player2 === player) setYourRanking(player2Snap.data().point);
+      else setOtherRanking(player2Snap.data().point);
+    }
+    else {
+      if (player2 === player) setYourRanking(0);
+      else setOtherRanking(0);
+    }
+  }
+
   const findingHost = async () => {
     const q = query(collection(db, 'playing'));
     const querySnapshot = await getDocs(q);
@@ -78,6 +107,7 @@ export default function Game() {
         return v.data().host === player || v.data().guest === player
       });
       setHostname(gameDataOnce.data().host);
+      setAllRanking(gameDataOnce.data().host, gameDataOnce.data().guest);
       setIsFoundHost(true);
       if (!gameDataOnce.data().gameInit) {
         setIsBoardGame(false);
@@ -108,8 +138,12 @@ export default function Game() {
         guest: 'init',
       },
       gamePhase: {
-        host: 0,
+        host: 1,
         guest: 0
+      },
+      gameDefend: {
+        host: -1,
+        guest: -1
       }
     };
     for (let i = 0; i < width * width; i++) {
@@ -140,8 +174,22 @@ export default function Game() {
   }, [winner]);
 
   const endGame = async () => {
-    const docRef = doc(db, 'playing', hostname)
-    await deleteDoc(docRef)
+    if (winner === player) {
+      const docRankingRef = doc(db, 'ranking', winner);
+      const docRankingSnap = await getDoc(docRankingRef);
+      if (!docRankingSnap.exists()) {
+        const payload = { 'point': 1 };
+        await setDoc(docRankingRef, payload);
+      }
+      else {
+        let rankingData = docRankingSnap.data();
+        rankingData.point = rankingData.point + 1;
+        console.log(rankingData.point);
+        await setDoc(docRankingRef, rankingData);
+      }
+    }
+    const docPlayingRef = doc(db, 'playing', hostname);
+    await deleteDoc(docPlayingRef);
     setAlertWinnerState(true);
     setModalShowWinnerState(true);
   }
@@ -153,7 +201,6 @@ export default function Game() {
       findWinner(snapData);
       setCurrentData(snapData);
       gameEventState(snapData);
-      setupGamePhase(snapData);
     })
   }
 
@@ -176,7 +223,7 @@ export default function Game() {
   const findWinner = (snapData) => {
     if (snapData?.gameInfo?.gameSet) {
       const { host, guest } = snapData?.gameInfo?.gameSet;
-      let guestWinner = 0, hostWinner = 0, winnerPoint = 10;
+      let guestWinner = 0, hostWinner = 0, winnerPoint = 2;
       for (const i in guest) {
         if (guest[i].indexOf('boom') !== -1) guestWinner++;
       }
@@ -223,6 +270,10 @@ export default function Game() {
           }
         }
       }
+      setDefendFill(snapData?.gameDefend[yourRole]);
+      if (defendFill !== snapData?.gameDefend[yourRole]) {
+        setMessageDefend(`You are blocking positiion ${snapData?.gameDefend[yourRole] + 1}`);
+      }
       setWhoseTurn(snapData.gameInfo.turn);
       setOurboard(myBoard);
       setOtherboard(otherBoard);
@@ -230,21 +281,10 @@ export default function Game() {
   }
 
   useEffect(() => {
-    if (whoseTurn) {
-      if (whoseTurn === player) {
-        updateGamePhase();
-      }
+    if (myRole) {
+      setupGamePhase(currentData);
     }
-  }, [whoseTurn])
-
-  const updateGamePhase = async () => {
-    const otherRole = myRole !== "host" ? "host" : "guest";
-    const docRef = doc(db, 'playing', hostname);
-    const newCurrentData = currentData;
-    newCurrentData.gamePhase[myRole] = 1;
-    newCurrentData.gamePhase[otherRole] = 0;
-    await updateDoc(docRef, newCurrentData);
-  }
+  }, [currentData, myRole])
 
   const setupGamePhase = async (snapData) => {
     setGamePhase(snapData.gamePhase[myRole]);
@@ -252,33 +292,79 @@ export default function Game() {
 
   const onFire = async (e) => {
     if (gameState === "playing") {
-      if (e.currentTarget.id.indexOf('o') !== -1 && hostname && whoseTurn === player) {
+      const yourRole = player === hostname ? "host" : "guest";
+      const otherRole = myRole !== "host" ? "host" : "guest";
+      if (e.currentTarget.id.indexOf('o') !== -1 && hostname && whoseTurn === player && currentData?.gamePhase[myRole] === 1) {
         const id = e.currentTarget.id.split("o")[1];
         const docRef = doc(db, 'playing', hostname);
         const newCurrentData = currentData;
         let fireSuccess = false;
-        if (player === hostname) {
-          if (newCurrentData.gameInfo.gamePlay.host[id]) {
-            setAlertFireState(true);
-            setModalShowFireState(true);
-          }
-          else {
-            newCurrentData.gameInfo.gamePlay.host[id] = 'x';
-            fireSuccess = true;
-          }
+        if (Number(id) === currentData.gameDefend[otherRole]) {
+          fireSuccess = true;
+          setMessageDefend('You hit the block');
         }
         else {
-          if (newCurrentData.gameInfo.gamePlay.guest[id]) {
-            setAlertFireState(true);
-            setModalShowFireState(true);
+          if (player === hostname) {
+            if (newCurrentData.gameInfo.gamePlay.host[id]) {
+              setAlertFireState(true);
+              setModalShowFireState(true);
+            }
+            else {
+              newCurrentData.gameInfo.gamePlay.host[id] = 'x';
+              fireSuccess = true;
+            }
           }
           else {
-            newCurrentData.gameInfo.gamePlay.guest[id] = 'x';
-            fireSuccess = true;
+            if (newCurrentData.gameInfo.gamePlay.guest[id]) {
+              setAlertFireState(true);
+              setModalShowFireState(true);
+            }
+            else {
+              newCurrentData.gameInfo.gamePlay.guest[id] = 'x';
+              fireSuccess = true;
+            }
           }
         }
         if (fireSuccess) {
+          newCurrentData.gamePhase[myRole] = 2;
+          await updateDoc(docRef, newCurrentData);
+        }
+      }
+      else if (e.currentTarget.id.indexOf('y') !== -1 && hostname && whoseTurn === player && currentData?.gamePhase[myRole] === 2) {
+        const id = e.currentTarget.id.split("y")[1];
+        const docRef = doc(db, 'playing', hostname);
+        const newCurrentData = currentData;
+        let defendSuccess = false;
+        if (Number(id) === defendFill) {
+          setAlertDefendState(true);
+          setModalShowDefendState(true);
+        }
+        else {
+          if (player === hostname) {
+            if (newCurrentData.gameInfo.gameSet.host[id].indexOf('submarine') !== -1 || newCurrentData.gameInfo.gameSet.host[id].indexOf('battleship') !== -1) {
+              newCurrentData.gameDefend[yourRole] = Number(id);
+              defendSuccess = true;
+            }
+            else {
+              setAlertDefendState(true);
+              setModalShowDefendState(true);
+            }
+          }
+          else {
+            if (newCurrentData.gameInfo.gameSet.guest[id].indexOf('submarine') !== -1 || newCurrentData.gameInfo.gameSet.guest[id].indexOf('battleship') !== -1) {
+              newCurrentData.gameDefend[yourRole] = Number(id);
+              defendSuccess = true;
+            }
+            else {
+              setAlertDefendState(true);
+              setModalShowDefendState(true);
+            }
+          }
+        }
+        if (defendSuccess) {
           newCurrentData.gameInfo.turn = newCurrentData.guest === player ? newCurrentData.host : newCurrentData.guest;
+          newCurrentData.gamePhase[myRole] = 0;
+          newCurrentData.gamePhase[otherRole] = 1;
           await updateDoc(docRef, newCurrentData);
         }
       }
@@ -369,6 +455,11 @@ export default function Game() {
     setModalShowFireState(false);
   }
 
+  const closeAlertDefendState = () => {
+    setAlertDefendState(false);
+    setModalShowDefendState(false);
+  }
+
   const closeAlertWinnerState = () => {
     navigate('/');
   }
@@ -456,12 +547,22 @@ export default function Game() {
             </Modal.Footer>
           </Modal>
         }
+        {
+          alertDefendState && <Modal show={modalShowDefendState} >
+            <Modal.Header closeButton>
+              <Modal.Title>กรุณาเลือกตำแหน่ง Submarine หรือ Battlefield ที่ต้องการป้องกัน และไม่ใช่ตำแหน่งเดิม</Modal.Title>
+            </Modal.Header>
+            <Modal.Footer>
+              <Button onClick={closeAlertDefendState}>Close</Button>
+            </Modal.Footer>
+          </Modal>
+        }
         <h1 className='text-center mb-4'>WARSHIP</h1>
         <Card className='text-center bg-transparent border-5'>
           <Card.Header>
             <div className='d-flex justify-content-center'>
-              {gameState === "init" && <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>prepare your board</p>}
-              {gameState === "ready" && <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}><Spinner
+              {gameState === "init" && <p style={{ fontFamily: 'Bangers', fontSize: '40px' }}>prepare your board</p>}
+              {gameState === "ready" && <p style={{ fontFamily: 'Bangers', fontSize: '40px' }}><Spinner
                 as="span"
                 animation="grow"
                 size="lm"
@@ -473,23 +574,26 @@ export default function Game() {
           </Card.Header>
           <Card.Body>
             <Row className='mb-3'>
-              {gamePhase === 1 && <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>phase 1: select to fire</p>}
-              {gamePhase === 2 && <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>phase 2: select to defend</p>}
+              {gamePhase === 1 && whoseTurn === player && <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>phase 1: select to fire</p>}
+              {gamePhase === 2 && whoseTurn === player && <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>phase 2: select to defend</p>}
             </Row>
             <Row className='d-flex justify-content-center'>
               <Col>
                 <Row>
-                  <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>Your Board</p>
+                  <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>Your Board ({`Win ${yourRanking} Games`})</p>
                 </Row>
-                <Row className='d-flex justify-content-center'>
+                <Row className='d-flex justify-content-center mb-3'>
                   <YourBoard />
+                </Row>
+                <Row>
+                  <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>{defendFill === -1 ? "" : messageDefend}</p>
                 </Row>
               </Col>
               <Col>
                 <Row>
-                  <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>Opponent Board</p>
+                  <p style={{ fontFamily: 'Bangers', fontSize: '25px' }}>Opponent Board ({`Win ${otherRanking} Games`})</p>
                 </Row>
-                <Row className='d-flex justify-content-center'>
+                <Row className='d-flex justify-content-center mb-3'>
                   <OpponentBoard />
                 </Row>
               </Col>
