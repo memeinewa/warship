@@ -30,7 +30,6 @@ export default function Game() {
   const [modalShowFireState, setModalShowFireState] = useState(false);
   const [alertDefendState, setAlertDefendState] = useState(false);
   const [modalShowDefendState, setModalShowDefendState] = useState(false);
-  const [boomCounting, setBoomCounting] = useState(0);
   const [whoseTurn, setWhoseTurn] = useState("");
   const [gamePhase, setGamePhase] = useState(0);
   const [yourRanking, setYourRanking] = useState(0);
@@ -223,13 +222,20 @@ export default function Game() {
 
   const findWinner = (snapData) => {
     if (snapData?.gameInfo?.gameSet) {
-      const { host, guest } = snapData?.gameInfo?.gameSet;
+      const hostSet = snapData?.gameInfo?.gameSet.host;
+      const guestSet = snapData?.gameInfo?.gameSet.guest;
+      const hostPlay = snapData?.gameInfo?.gamePlay.host;
+      const guestPlay = snapData?.gameInfo?.gamePlay.guest;
       let guestWinner = 0, hostWinner = 0, winnerPoint = 10;
-      for (const i in guest) {
-        if (guest[i].indexOf('boom') !== -1) guestWinner++;
+      for (const i in hostSet) {
+        if (guestPlay[i] === 'x' && hostSet[i].indexOf("taken") >= 0) {
+          guestWinner++;
+        }
       }
-      for (const i in host) {
-        if (host[i].indexOf('boom') !== -1) hostWinner++;
+      for (const i in guestSet) {
+        if (hostPlay[i] === 'x' && guestSet[i].indexOf("taken") >= 0) {
+          hostWinner++;
+        }
       }
       if (hostWinner === winnerPoint) {
         setWinner(snapData["guest"]);
@@ -240,21 +246,20 @@ export default function Game() {
     }
   }
 
-  const gameEvent = (snapData) => {
+  const gameEvent = async (snapData) => {
+    const docNewRef = doc(db, 'playing', hostname);
+    const docSnap = await getDoc(docNewRef);
+    snapData = docSnap.data();
     const yourRole = player === hostname ? "host" : "guest";
     if (snapData?.gameInfo?.gamePlay && snapData?.gameInfo?.gameSet) {
       const otherPlay = yourRole === "host" ? snapData?.gameInfo?.gamePlay?.guest : snapData?.gameInfo?.gamePlay?.host;
       const ourPlay = snapData?.gameInfo?.gamePlay[yourRole];
       const _myBoard = snapData?.gameInfo?.gameSet[yourRole];
       const _otherBoard = yourRole === "host" ? snapData?.gameInfo?.gameSet?.guest : snapData?.gameInfo?.gameSet?.host;
-      let boomCount = 0;
       for (const i in otherPlay) {
         if (otherPlay[i] === "x" && _myBoard[i].indexOf("taken") >= 0) {
           if (_myBoard[i].indexOf("boom") === -1) {
             _myBoard[i] = _myBoard[i].concat(" ", "boom");
-            if (_myBoard[i].indexOf("submarine") !== -1 || _myBoard[i].indexOf("battleship") !== -1) {
-              boomCount++;
-            }
           }
         }
         else if (otherPlay[i] === "x") {
@@ -275,7 +280,6 @@ export default function Game() {
           }
         }
       }
-      setBoomCounting(boomCount);
       setDefendFill(snapData?.gameDefend[yourRole]);
       if (defendFill !== snapData?.gameDefend[yourRole]) {
         setMessageDefend(`You are blocking positiion ${snapData?.gameDefend[yourRole] + 1}`);
@@ -303,8 +307,7 @@ export default function Game() {
       if (e.currentTarget.id.indexOf('o') !== -1 && hostname && whoseTurn === player && currentData?.gamePhase[myRole] === 1) {
         const id = e.currentTarget.id.split("o")[1];
         const docRef = doc(db, 'playing', hostname);
-        const docSnap = await getDoc(docRef);
-        const newCurrentData = docSnap.data();
+        const newCurrentData = currentData;
         let fireSuccess = false;
         if (Number(id) === currentData.gameDefend[otherRole]) {
           fireSuccess = true;
@@ -333,7 +336,21 @@ export default function Game() {
           }
         }
         if (fireSuccess) {
-          if(boomCounting === 6) {
+          let boomCounting = 0;
+
+          const doc2Ref = doc(db, 'playing', hostname);
+          const doc2Snap = await getDoc(doc2Ref);
+          const lastestData = doc2Snap.data();
+          const gamePlay = lastestData.gameInfo.gamePlay[otherRole];
+          const gameSet = lastestData.gameInfo.gameSet[yourRole];
+
+          for (const i in gamePlay) {
+            if (gamePlay[i] === 'x' && (gameSet[i].indexOf("submarine") >= 0 || gameSet[i].indexOf("battleship") >= 0)) {
+              boomCounting++;
+            }
+          }
+
+          if (boomCounting >= 6) {
             newCurrentData.gameDefend[myRole] = -1;
             newCurrentData.gameInfo.turn = newCurrentData.guest === player ? newCurrentData.host : newCurrentData.guest;
             newCurrentData.gamePhase[myRole] = 0;
@@ -566,7 +583,7 @@ export default function Game() {
         {
           alertDefendState && <Modal show={modalShowDefendState} >
             <Modal.Header closeButton>
-              <Modal.Title>กรุณาเลือกตำแหน่ง Submarine หรือ Battlefield ที่ต้องการป้องกัน และไม่ใช่ตำแหน่งเดิม</Modal.Title>
+              <Modal.Title>กรุณาเลือกตำแหน่ง Ship2 หรือ Ship3 ที่ต้องการป้องกัน และไม่ใช่ตำแหน่งเดิม</Modal.Title>
             </Modal.Header>
             <Modal.Footer>
               <Button onClick={closeAlertDefendState}>Close</Button>
