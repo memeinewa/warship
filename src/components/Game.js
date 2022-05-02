@@ -30,6 +30,7 @@ export default function Game() {
   const [modalShowFireState, setModalShowFireState] = useState(false);
   const [alertDefendState, setAlertDefendState] = useState(false);
   const [modalShowDefendState, setModalShowDefendState] = useState(false);
+  const [boomCounting, setBoomCounting] = useState(0);
   const [whoseTurn, setWhoseTurn] = useState("");
   const [gamePhase, setGamePhase] = useState(0);
   const [yourRanking, setYourRanking] = useState(0);
@@ -223,7 +224,7 @@ export default function Game() {
   const findWinner = (snapData) => {
     if (snapData?.gameInfo?.gameSet) {
       const { host, guest } = snapData?.gameInfo?.gameSet;
-      let guestWinner = 0, hostWinner = 0, winnerPoint = 2;
+      let guestWinner = 0, hostWinner = 0, winnerPoint = 10;
       for (const i in guest) {
         if (guest[i].indexOf('boom') !== -1) guestWinner++;
       }
@@ -244,39 +245,44 @@ export default function Game() {
     if (snapData?.gameInfo?.gamePlay && snapData?.gameInfo?.gameSet) {
       const otherPlay = yourRole === "host" ? snapData?.gameInfo?.gamePlay?.guest : snapData?.gameInfo?.gamePlay?.host;
       const ourPlay = snapData?.gameInfo?.gamePlay[yourRole];
-      const myBoard = snapData?.gameInfo?.gameSet[yourRole];
-      const otherBoard = yourRole === "host" ? snapData?.gameInfo?.gameSet?.guest : snapData?.gameInfo?.gameSet?.host;
+      const _myBoard = snapData?.gameInfo?.gameSet[yourRole];
+      const _otherBoard = yourRole === "host" ? snapData?.gameInfo?.gameSet?.guest : snapData?.gameInfo?.gameSet?.host;
+      let boomCount = 0;
       for (const i in otherPlay) {
-        if (otherPlay[i] === "x" && myBoard[i].indexOf("taken") >= 0) {
-          if (myBoard[i].indexOf("boom") === -1) {
-            myBoard[i] = myBoard[i].concat(" ", "boom");
+        if (otherPlay[i] === "x" && _myBoard[i].indexOf("taken") >= 0) {
+          if (_myBoard[i].indexOf("boom") === -1) {
+            _myBoard[i] = _myBoard[i].concat(" ", "boom");
+            if (_myBoard[i].indexOf("submarine") !== -1 || _myBoard[i].indexOf("battleship") !== -1) {
+              boomCount++;
+            }
           }
         }
         else if (otherPlay[i] === "x") {
-          if (myBoard[i].indexOf("miss") === -1) {
-            myBoard[i] = myBoard[i].concat(" ", "miss");
+          if (_myBoard[i].indexOf("miss") === -1) {
+            _myBoard[i] = _myBoard[i].concat(" ", "miss");
           }
         }
       }
       for (const i in ourPlay) {
-        if (ourPlay[i] === "x" && otherBoard[i].indexOf("taken") >= 0) {
-          if (otherBoard[i].indexOf("boom") === -1) {
-            otherBoard[i] = "boom";
+        if (ourPlay[i] === "x" && _otherBoard[i].indexOf("taken") >= 0) {
+          if (_otherBoard[i].indexOf("boom") === -1) {
+            _otherBoard[i] = "boom";
           }
         }
         else if (ourPlay[i] === "x") {
-          if (otherBoard[i].indexOf("miss") === -1) {
-            otherBoard[i] = "miss";
+          if (_otherBoard[i].indexOf("miss") === -1) {
+            _otherBoard[i] = "miss";
           }
         }
       }
+      setBoomCounting(boomCount);
       setDefendFill(snapData?.gameDefend[yourRole]);
       if (defendFill !== snapData?.gameDefend[yourRole]) {
         setMessageDefend(`You are blocking positiion ${snapData?.gameDefend[yourRole] + 1}`);
       }
       setWhoseTurn(snapData.gameInfo.turn);
-      setOurboard(myBoard);
-      setOtherboard(otherBoard);
+      setOurboard(_myBoard);
+      setOtherboard(_otherBoard);
     }
   }
 
@@ -297,7 +303,8 @@ export default function Game() {
       if (e.currentTarget.id.indexOf('o') !== -1 && hostname && whoseTurn === player && currentData?.gamePhase[myRole] === 1) {
         const id = e.currentTarget.id.split("o")[1];
         const docRef = doc(db, 'playing', hostname);
-        const newCurrentData = currentData;
+        const docSnap = await getDoc(docRef);
+        const newCurrentData = docSnap.data();
         let fireSuccess = false;
         if (Number(id) === currentData.gameDefend[otherRole]) {
           fireSuccess = true;
@@ -326,14 +333,23 @@ export default function Game() {
           }
         }
         if (fireSuccess) {
-          newCurrentData.gamePhase[myRole] = 2;
+          if(boomCounting === 6) {
+            newCurrentData.gameDefend[myRole] = -1;
+            newCurrentData.gameInfo.turn = newCurrentData.guest === player ? newCurrentData.host : newCurrentData.guest;
+            newCurrentData.gamePhase[myRole] = 0;
+            newCurrentData.gamePhase[otherRole] = 1;
+          }
+          else {
+            newCurrentData.gamePhase[myRole] = 2;
+          }
           await updateDoc(docRef, newCurrentData);
         }
       }
       else if (e.currentTarget.id.indexOf('y') !== -1 && hostname && whoseTurn === player && currentData?.gamePhase[myRole] === 2) {
         const id = e.currentTarget.id.split("y")[1];
         const docRef = doc(db, 'playing', hostname);
-        const newCurrentData = currentData;
+        const docSnap = await getDoc(docRef);
+        const newCurrentData = docSnap.data();
         let defendSuccess = false;
         if (Number(id) === defendFill) {
           setAlertDefendState(true);
