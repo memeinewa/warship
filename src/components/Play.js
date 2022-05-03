@@ -35,6 +35,9 @@ export default function Play() {
             if (isPlayingGame) {
                 navigate('/game')
             }
+            else {
+                isSnapshotRoom()
+            }
         }
         else {
             isSnapshotRoom()
