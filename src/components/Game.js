@@ -304,10 +304,10 @@ export default function Game() {
         }
       }
       if (hostWinner === winnerPoint) {
-        setWinner(snapData["guest"]);
+        setWinner(snapData["host"]);
       }
       else if (guestWinner === winnerPoint) {
-        setWinner(snapData["host"]);
+        setWinner(snapData["guest"]);
       }
     }
   }
@@ -318,41 +318,49 @@ export default function Game() {
     snapData = docSnap.data();
     const yourRole = player === hostname ? "host" : "guest";
     if (snapData?.gameInfo?.gamePlay && snapData?.gameInfo?.gameSet) {
-      const otherPlay = yourRole === "host" ? snapData?.gameInfo?.gamePlay?.guest : snapData?.gameInfo?.gamePlay?.host;
-      const ourPlay = snapData?.gameInfo?.gamePlay[yourRole];
-      const _myBoard = snapData?.gameInfo?.gameSet[yourRole];
-      const _otherBoard = yourRole === "host" ? snapData?.gameInfo?.gameSet?.guest : snapData?.gameInfo?.gameSet?.host;
-      for (const i in otherPlay) {
-        if (otherPlay[i] === "x" && _myBoard[i].indexOf("taken") >= 0) {
-          if (_myBoard[i].indexOf("boom") === -1) {
-            _myBoard[i] = _myBoard[i].concat(" ", "boom");
-          }
+      const hostSet = snapData?.gameInfo?.gameSet.host;
+      const guestSet = snapData?.gameInfo?.gameSet.guest;
+      const hostPlay = snapData?.gameInfo?.gamePlay.host;
+      const guestPlay = snapData?.gameInfo?.gamePlay.guest;
+      for (const i in hostSet) {
+        if (guestPlay[i] === 'x' && hostSet[i].indexOf("taken") >= 0) {
+          hostSet[i] = hostSet[i].concat(" ", "boom");
         }
-        else if (otherPlay[i] === "x") {
-          if (_myBoard[i].indexOf("miss") === -1) {
-            _myBoard[i] = _myBoard[i].concat(" ", "miss");
-          }
+        else if (guestPlay[i] === 'x') {
+          hostSet[i] = hostSet[i].concat(" ", "miss");
         }
       }
-      for (const i in ourPlay) {
-        if (ourPlay[i] === "x" && _otherBoard[i].indexOf("taken") >= 0) {
-          if (_otherBoard[i].indexOf("boom") === -1) {
-            _otherBoard[i] = "boom";
-          }
+      for (const i in guestSet) {
+        if (hostPlay[i] === 'x' && guestSet[i].indexOf("taken") >= 0) {
+          guestSet[i] = guestSet[i].concat(" ", "boom");
         }
-        else if (ourPlay[i] === "x") {
-          if (_otherBoard[i].indexOf("miss") === -1) {
-            _otherBoard[i] = "miss";
-          }
+        else if (hostPlay[i] === 'x') {
+          guestSet[i] = guestSet[i].concat(" ", "miss");
         }
+      }
+      if (snapData?.gameDefend?.host !== -1) {
+        if (player === hostname) {
+          hostSet[snapData?.gameDefend?.host] = hostSet[snapData?.gameDefend?.host].concat(" ", "defend");
+        }
+      }
+      if (snapData?.gameDefend?.guest !== -1) { 
+        if (player !== hostname) {
+          guestSet[snapData?.gameDefend?.guest] = guestSet[snapData?.gameDefend?.guest].concat(" ", "defend");
+        }
+      }
+      if (hostname === player) {
+        setOurboard(hostSet);
+        setOtherboard(guestSet);
+      }
+      else {
+        setOurboard(guestSet);
+        setOtherboard(hostSet);
       }
       setDefendFill(snapData?.gameDefend[yourRole]);
       if (defendFill !== snapData?.gameDefend[yourRole]) {
-        setMessageDefend(`You are blocking positiion ${snapData?.gameDefend[yourRole] + 1}`);
+        setMessageDefend(`You are blocking position ${snapData?.gameDefend[yourRole] + 1}`);
       }
       setWhoseTurn(snapData.gameInfo.turn);
-      setOurboard(_myBoard);
-      setOtherboard(_otherBoard);
     }
   }
 
@@ -622,7 +630,7 @@ export default function Game() {
       <Container>
         {
           alertErrorState && <Modal show={modalShowErrorState} >
-            <Modal.Header closeButton>
+            <Modal.Header>
               <Modal.Title>กรุณากด Random ก่อน</Modal.Title>
             </Modal.Header>
             <Modal.Footer>
@@ -632,7 +640,7 @@ export default function Game() {
         }
         {
           alertWinnerState && <Modal show={modalShowWinnerState} >
-            <Modal.Header closeButton>
+            <Modal.Header>
               <Modal.Title>เกมจบแล้ว ผู้ชนะคือ {winner}</Modal.Title>
             </Modal.Header>
             <Modal.Footer>
@@ -642,7 +650,7 @@ export default function Game() {
         }
         {
           alertFireState && <Modal show={modalShowFireState} >
-            <Modal.Header closeButton>
+            <Modal.Header>
               <Modal.Title>กรุณาเลือกตำแหน่งใหม่</Modal.Title>
             </Modal.Header>
             <Modal.Footer>
@@ -652,7 +660,7 @@ export default function Game() {
         }
         {
           alertDefendState && <Modal show={modalShowDefendState} >
-            <Modal.Header closeButton>
+            <Modal.Header>
               <Modal.Title>กรุณาเลือกตำแหน่ง Ship2 หรือ Ship3 ที่ต้องการป้องกัน และไม่ใช่ตำแหน่งเดิม</Modal.Title>
             </Modal.Header>
             <Modal.Footer>
@@ -662,7 +670,7 @@ export default function Game() {
         }
         {
           alertExpireState && <Modal show={modalShowExpireState} >
-            <Modal.Header closeButton>
+            <Modal.Header>
               <Modal.Title>เกมหมดเวลาเล่นแล้ว</Modal.Title>
             </Modal.Header>
             <Modal.Footer>
