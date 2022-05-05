@@ -67,9 +67,9 @@ export default function Home() {
                     <Row>
                         <Col><Button onClick={handleHowto} className='w-50 mb-4' style={buttonStyle}>H o w  t o ?</Button></Col>
                     </Row>
-                    {/* <Row>
+                    <Row>
                         <Col><Button onClick={handleRanking} className='w-50' style={buttonStyle}>R a n k i n g</Button></Col>
-                    </Row> */}
+                    </Row>
                 </Card.Body>
             </Card>
             <Button onClick={handleSignOut} style={logoutButtonStyle} >L o g o u t</Button>

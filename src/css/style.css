@@ -111,7 +111,7 @@ body {
 .taken.horizontal::before {
   content: '';
   position: absolute;
-  border: .3vmin solid white;
+  border: .3vmin solid rgb(252, 0, 0);
   top: -1px;
   bottom: -1px;
   left: -1px;
